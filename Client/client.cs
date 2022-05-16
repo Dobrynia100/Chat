@@ -7,7 +7,7 @@ using System.Net.Sockets;
 using System.Threading;
 namespace SocketTcpClient
 {
-    class myThread
+   public class myThread
     {
         Thread thread;
         Socket socket;
@@ -42,15 +42,15 @@ namespace SocketTcpClient
             }
             catch
             {
-                Console.WriteLine("Подключение прервано!"); //соединение было прервано
+                Console.WriteLine("Подключение прервано"); //соединение было прервано
                 Console.ReadLine();
                
             }
         }
     }
+        
 
-
-}
+    }
 
 class Client
     {

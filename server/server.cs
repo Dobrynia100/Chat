@@ -12,23 +12,22 @@ namespace SocketTcpServer
     //отдельный класс нужен, чтоб запускать в потоке функцию с параметрами
     class myThread
 {
-    Thread thread;
-    Socket[] handler=new Socket[10];
-
-    int num=0;
+        Socket handler;
+     int num=0;
           server serv;
         int[] clients = new int[10];
         
-        public myThread( int num1, Socket handler1) //Конструктор получает имя функции и номер, до которого ведется счет
+        public myThread( int num1, Socket[] handler1,server server1) //Конструктор получает имя функции и номер, до которого ведется счет
     {
             //  thread.Name = name;
             //thread.Start(num);//передача параметра в поток
-          
-            handler[num1] = handler1;
-        num = num1;
-            //serv = server;
-            clients[num] = num;
-    }
+            
+            handler = handler1[num1];
+       
+            serv = server1;
+            clients[num] = num1;
+            num = num1;
+        }
 
     public void func()//Функция потока, передаем параметр всегда object
     {
@@ -37,73 +36,82 @@ namespace SocketTcpServer
         int kol_bytes = 0;//количество полученных байтов
         byte[] data = new byte[255]; // буфер для получаемых данных
 
-            /*   for (int i = 0; i < num; i++)
-               {
-                   if (clients[i] != num)
-                   {
-                       message = clients[i] + ": ";
-                       data = Encoding.Unicode.GetBytes(message);
-                       handler.Send(data);
-
-                   }
-               }*/
-            string message = num + " вошел в чат \n";
-            while (true)
-        {
-                
-                serv.Broadcast(message, num, handler);
-                do
-            {
-
-
-                bytes = handler[num].Receive(data);  // получаем сообщение
-                builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
-                kol_bytes += bytes;
-               
-            }
-            while (handler[num].Available > 0);
-
-            Console.WriteLine(" client " + num + ":\n");
-            Console.WriteLine(DateTime.Now.ToShortTimeString() + ": " + builder.ToString());
-
-            Console.WriteLine(kol_bytes + "bytes\n");
-            // отправляем ответ
-            
-            data = Encoding.Unicode.GetBytes(message);
           
-            // закрываем сокет
-            if (builder.ToString() == "cl")
+            try
             {
-                message = "соединение закрыто\n";
-                data = Encoding.Unicode.GetBytes(message);
-                handler[num].Send(data);
+                string message = num + " вошел в чат \n";
+                
+                serv.Broadcast(message, num);
+                while (true)
+                {
 
-                handler[num].Close();
+                    
+                    do
+                    {
+                        try
+                        {
 
-                Console.WriteLine("соединение закрыто.\n");
+                            bytes = handler.Receive(data);  // получаем сообщение
+                            builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
+                            kol_bytes += bytes;
+                        }
+                        catch{
 
 
+                            Console.WriteLine("соединение с пользователем " + num+" закрыто.\n");
+
+                            break;
+                        }
+
+                    }
+                    while (handler.Available > 0);
+
+                    Console.WriteLine(DateTime.Now.ToShortTimeString() + " client " + num + ": "+ builder.ToString());
+                    
+
+                    Console.WriteLine(kol_bytes + "bytes");
+                    // отправляем ответ
+                    message = num + ": " + builder.ToString();
+                    // закрываем сокет
+                    if (builder.ToString() == "cl")
+                    {
+                        message = "соединение с пользователем " + num + " закрыто.\n";
+                        data = Encoding.Unicode.GetBytes(message);
+                        handler.Send(data);
+                        handler.Close();
+                        Console.WriteLine("соединение с пользователем "+num+" закрыто.\n");
+                        break;
+
+                    }
+
+                    serv.Broadcast(message, num);
+
+                 
+
+                    builder.Clear();
+
+
+                }
             }
-           
-
-            builder.Clear();
-
-
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
-    }
        
 
     }
 
  
-    class server
+   public class server
     {
         static int port = 3817; // порт для приема входящих запросов
         static int[] clients = new int[10];
-        static void Main(string[] args)
+        Socket[] handler = new Socket[10];
+        internal void start()
         {
-
-            String Host = Dns.GetHostName();
+              
+                String Host = Dns.GetHostName();
             Console.WriteLine("Comp name = " + Host);
             IPAddress[] IPs;
             IPs = Dns.GetHostAddresses(Host);
@@ -112,9 +120,10 @@ namespace SocketTcpServer
             
             //получаем адреса для запуска сокета
             IPEndPoint ipPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
-            
+
             // создаем сокет сервера
             int num = 0;
+            clients[0] = 1;
             Socket listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             try
             {
@@ -131,18 +140,22 @@ namespace SocketTcpServer
 
 
                     // готовимся  получать  сообщение
-                    Socket handler = listenSocket.Accept();
-                    myThread t1 = new myThread( num, handler);
+                    handler[num] = listenSocket.Accept();
+                    myThread t1 = new myThread( num, handler,this);
                     Thread thread = new Thread(new ThreadStart(t1.func));
                     clients[num] = num;
-                                                        
+
+                   // Console.WriteLine("num1-" + num);
+                    num++;
+                   // for (int i = 0; i < num; i++)
+                       // Console.WriteLine("clients1-"+clients[num]);
+
+
+
+
 
                     thread.Start();
-                    num++;
-
-
-
-
+    
 
                 }
             }
@@ -154,21 +167,48 @@ namespace SocketTcpServer
                 Console.WriteLine(ex.Message);
             }
         }
-        public void Broadcast(string message, int num, Socket[] handler)
+        public void Broadcast(string message, int num)
         {
             byte[] data = Encoding.Unicode.GetBytes(message);
+           // Console.WriteLine("num2-" + num);
             for (int i = 0; i < num; i++)
             {
-                if (clients[i] == num)
-                {
+                
+                //    Console.WriteLine("clients2-" + clients[num]);
+
+               
+              //  if (clients[i] != num)
+              //  {
                     // message = clients[i] + ": ";
                     data = Encoding.Unicode.GetBytes(message);
                     handler[i].Send(data);
 
-                }
+               // }
             }
         }
     }
     
+
+
+class serv
+{
+    static server server; // сервер
+    static Thread Thread; // потока для прослушивания
+    static void Main(string[] args)
+    {
+        try
+        {
+            server = new server();
+            Thread = new Thread(new ThreadStart(server.start));
+            Thread.Start(); //старт потока
+        }
+        catch (Exception ex)
+        {
+            
+            Console.WriteLine(ex.Message);
+        }
+    }
+}
+
 
 }
