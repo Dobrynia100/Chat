@@ -41,7 +41,7 @@ namespace SocketTcpServer
             {
                 string message = num + " вошел в чат \n";
                 
-                serv.Broadcast(message, num);
+                serv.Broadcast(message);
                 while (true)
                 {
 
@@ -84,7 +84,7 @@ namespace SocketTcpServer
 
                     }
 
-                    serv.Broadcast(message, num);
+                    serv.Broadcast(message);
 
                  
 
@@ -108,6 +108,7 @@ namespace SocketTcpServer
         static int port = 3817; // порт для приема входящих запросов
         static int[] clients = new int[10];
         Socket[] handler = new Socket[10];
+        int num = 0;
         internal void start()
         {
               
@@ -122,7 +123,7 @@ namespace SocketTcpServer
             IPEndPoint ipPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
 
             // создаем сокет сервера
-            int num = 0;
+            
             clients[0] = 1;
             Socket listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             try
@@ -167,7 +168,7 @@ namespace SocketTcpServer
                 Console.WriteLine(ex.Message);
             }
         }
-        public void Broadcast(string message, int num)
+        public void Broadcast(string message)
         {
             byte[] data = Encoding.Unicode.GetBytes(message);
            // Console.WriteLine("num2-" + num);
