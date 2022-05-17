@@ -76,6 +76,10 @@ class Client
 
                     Console.Write("Введите сообщение:");
                     string message = Console.ReadLine();
+                    if (message == "close")
+                    {
+                        break;
+                    }
                     byte[] data = Encoding.Unicode.GetBytes(message);
 
                     //посылаем сообщение

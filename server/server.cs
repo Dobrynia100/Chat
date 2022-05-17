@@ -26,7 +26,7 @@ namespace SocketTcpServer
        
             serv = server1;
             clients[num] = num1;
-            num = num1;
+            num = num1+1;
         }
 
     public void func()//Функция потока, передаем параметр всегда object
@@ -41,7 +41,7 @@ namespace SocketTcpServer
             {
                 string message = num + " вошел в чат \n";
                 
-                serv.Broadcast(message);
+                serv.Broadcast(message,num-1);
                 while (true)
                 {
 
@@ -73,7 +73,7 @@ namespace SocketTcpServer
                     // отправляем ответ
                     message = num + ": " + builder.ToString();
                     // закрываем сокет
-                    if (builder.ToString() == "cl")
+                    if (builder.ToString() == "close")
                     {
                         message = "соединение с пользователем " + num + " закрыто.\n";
                         data = Encoding.Unicode.GetBytes(message);
@@ -84,7 +84,7 @@ namespace SocketTcpServer
 
                     }
 
-                    serv.Broadcast(message);
+                    serv.Broadcast(message,num-1);
 
                  
 
@@ -168,23 +168,23 @@ namespace SocketTcpServer
                 Console.WriteLine(ex.Message);
             }
         }
-        public void Broadcast(string message)
+        public void Broadcast(string message,int nom)
         {
             byte[] data = Encoding.Unicode.GetBytes(message);
-           // Console.WriteLine("num2-" + num);
+            //Console.WriteLine("num2-" + num);
             for (int i = 0; i < num; i++)
             {
-                
-                //    Console.WriteLine("clients2-" + clients[num]);
 
-               
-              //  if (clients[i] != num)
-              //  {
-                    // message = clients[i] + ": ";
+
+               // Console.WriteLine("clients1-" + clients[i]);
+
+                if (clients[i] != nom)
+                {
+                   
                     data = Encoding.Unicode.GetBytes(message);
                     handler[i].Send(data);
 
-               // }
+                }
             }
         }
     }
