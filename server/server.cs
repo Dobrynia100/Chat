@@ -34,32 +34,30 @@ namespace SocketTcpServer
         int kol_bytes = 0;//количество полученных байтов
         byte[] data = new byte[255]; // буфер для получаемых данных
 
-          
+            string message;
             try
             {
-                string message = num + " вошел в чат \n";
                 
-                serv.Broadcast(message,num-1);
                 while (true)
                 {
 
                     
                     do
                     {
-                        try
-                        {
+                       // try
+                       // {
 
                             bytes = handler.Receive(data);  // получаем сообщение
                             builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
                             kol_bytes += bytes;
-                        }
+                       /* }
                         catch{
 
 
                             Console.WriteLine("соединение с пользователем " + num+" закрыто.\n");
                            
                             break;
-                        }
+                        }*/
 
                     }
                     while (handler.Available > 0);
@@ -69,20 +67,9 @@ namespace SocketTcpServer
 
                     Console.WriteLine(kol_bytes + "bytes");
                     // отправляем ответ
-                    message = num + ": " + builder.ToString();
+                    message =  builder.ToString();
                     // закрываем сокет
                     
-                    if (builder.ToString() == "close")
-                    {
-                        message = "соединение с пользователем " + num + " закрыто.\n";
-                        data = Encoding.Unicode.GetBytes(message);
-                        handler.Send(data);
-                       
-                        Console.WriteLine("соединение с пользователем "+num+" закрыто.\n");
-                        
-                        break;
-
-                    }
                     
                     serv.Broadcast(message,num-1);
 
