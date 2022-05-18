@@ -14,9 +14,9 @@ namespace SocketTcpClient
         public myThread(Socket sock) //Конструктор получает имя функции и номер,     до которого ведется счет
         {
             thread = new Thread(this.receive);
-            //thread.Name = name;
+         
             socket = sock;
-            // thread.Start(num);//передача параметра в поток
+            
             thread.Start();
 
         }
@@ -76,19 +76,21 @@ class Client
 
                     Console.Write("Введите сообщение:");
                     string message = Console.ReadLine();
-                    if (message == "close")
-                    {
-                        break;
-                    }
+                   
                     byte[] data = Encoding.Unicode.GetBytes(message);
 
                     //посылаем сообщение
                     socket.Send(data);
                     // готовимся получить ответ
+                  
                     data = new byte[256]; // буфер для ответа
                     int bytes = 0; // количество полученных байт
-                                 // получаем ответ
+                                   // получаем ответ
+                    if (message == "close")
+                    {
 
+                        Environment.Exit(0);
+                    }
                     char[] reply = new char[2000];//сообщения пользователей
                     myThread t1 = new myThread(socket);
                     
