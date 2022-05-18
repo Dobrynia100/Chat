@@ -37,27 +37,22 @@ namespace SocketTcpServer
             string message;
             try
             {
-                
+                message = "\r \n"+num + " вошел в чат \n";
+
+                serv.Broadcast(message, num - 1);
                 while (true)
                 {
 
                     
                     do
                     {
-                       // try
-                       // {
+                       
 
                             bytes = handler.Receive(data);  // получаем сообщение
                             builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
                             kol_bytes += bytes;
-                       /* }
-                        catch{
-
-
-                            Console.WriteLine("соединение с пользователем " + num+" закрыто.\n");
-                           
-                            break;
-                        }*/
+                      
+                      
 
                     }
                     while (handler.Available > 0);
@@ -67,10 +62,19 @@ namespace SocketTcpServer
 
                     Console.WriteLine(kol_bytes + "bytes");
                     // отправляем ответ
-                    message =  builder.ToString();
+                    message = "\r \n "+num+": "+ builder.ToString();
                     // закрываем сокет
-                    
-                    
+                    if (builder.ToString() == "close")
+                    {
+                        message = "\r \n соединение с пользователем " + num + " закрыто.\n";
+                        data = Encoding.Unicode.GetBytes(message);
+                        handler.Send(data);
+                       // handler.Close();
+                        Console.WriteLine(" соединение с пользователем " + num + " закрыто.\n");
+                      //  break;
+
+                    }
+
                     serv.Broadcast(message,num-1);
 
                  
@@ -133,12 +137,9 @@ namespace SocketTcpServer
                     Thread thread = new Thread(new ThreadStart(t1.func));
                     clients[num] = num;
 
-                   // Console.WriteLine("num1-" + num);
+               
                     num++;
-                   // for (int i = 0; i < num; i++)
-                       // Console.WriteLine("clients1-"+clients[num]);
-
-
+               
 
 
 
@@ -158,12 +159,12 @@ namespace SocketTcpServer
         public void Broadcast(string message,int nom)
         {
             byte[] data = Encoding.Unicode.GetBytes(message);
-            //Console.WriteLine("num2-" + num);
+            
             for (int i = 0; i < num; i++)
             {
 
 
-               // Console.WriteLine("clients1-" + clients[i]);
+              
 
                 if (clients[i] != nom)
                 {

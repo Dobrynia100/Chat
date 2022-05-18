@@ -90,9 +90,8 @@ namespace chat_form
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(7, 235);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(59, 13);
+            this.label1.Size = new System.Drawing.Size(0, 13);
             this.label1.TabIndex = 6;
-            this.label1.Text = "ваше имя-";
             // 
             // Form1
             // 
