@@ -19,8 +19,6 @@ namespace SocketTcpServer
         
         public myThread( int num1, Socket[] handler1,server server1) //Конструктор получает имя функции и номер, до которого ведется счет
     {
-            //  thread.Name = name;
-            //thread.Start(num);//передача параметра в поток
             
             handler = handler1[num1];
        
@@ -59,7 +57,7 @@ namespace SocketTcpServer
 
 
                             Console.WriteLine("соединение с пользователем " + num+" закрыто.\n");
-
+                           
                             break;
                         }
 
@@ -73,17 +71,19 @@ namespace SocketTcpServer
                     // отправляем ответ
                     message = num + ": " + builder.ToString();
                     // закрываем сокет
+                    
                     if (builder.ToString() == "close")
                     {
                         message = "соединение с пользователем " + num + " закрыто.\n";
                         data = Encoding.Unicode.GetBytes(message);
                         handler.Send(data);
-                        handler.Close();
+                       
                         Console.WriteLine("соединение с пользователем "+num+" закрыто.\n");
+                        
                         break;
 
                     }
-
+                    
                     serv.Broadcast(message,num-1);
 
                  
