@@ -55,7 +55,7 @@ namespace chat_form
 
 
             textBox2.Text = "Введите сообщение:";
-            Task receiveTask = new Task(receive);
+            Thread receiveTask = new Thread(receive);
             receiveTask.Start();
             button3.Enabled = false; // кнопка входа
             button2.Enabled = true; // кнопка выхода

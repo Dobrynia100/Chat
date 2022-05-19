@@ -17,7 +17,7 @@ namespace SocketTcpServer
           server serv;
         int[] clients = new int[10];
         
-        public myThread( int num1, Socket[] handler1,server server1) //Конструктор получает имя функции и номер, до которого ведется счет
+        public myThread( int num1, List<Socket> handler1,server server1) //Конструктор получает имя функции и номер, до которого ведется счет
     {
             
             handler = handler1[num1];
@@ -42,8 +42,8 @@ namespace SocketTcpServer
                 serv.Broadcast(message, num - 1);
                 while (true)
                 {
-
                     
+
                     do
                     {
                        
@@ -51,8 +51,8 @@ namespace SocketTcpServer
                             bytes = handler.Receive(data);  // получаем сообщение
                             builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
                             kol_bytes += bytes;
-                      
-                      
+                      //  Console.WriteLine("num5-" + num);
+
 
                     }
                     while (handler.Available > 0);
@@ -69,7 +69,9 @@ namespace SocketTcpServer
                         message = "\r \n соединение с пользователем " + num + " закрыто.\n";
                         data = Encoding.Unicode.GetBytes(message);
                         handler.Send(data);
-                       // handler.Close();
+                        serv.RemoveConnection(num - 1);
+                        handler.Close();
+                     //   Console.WriteLine("num4-" + num);
                         Console.WriteLine(" соединение с пользователем " + num + " закрыто.\n");
                       //  break;
 
@@ -97,9 +99,22 @@ namespace SocketTcpServer
    public class server
     {
         static int port = 3817; // порт для приема входящих запросов
+        //static int[] clients = new int[10];
+       // Socket[] handler = new Socket[10];
+        List<Socket> handler = new List<Socket>();
         static int[] clients = new int[10];
-        Socket[] handler = new Socket[10];
         int num = 0;
+        int last = 0;
+        protected internal void RemoveConnection(int nom)
+        {
+            // получаем по id закрытое подключение
+            Socket client = handler.ElementAt(nom);
+            // и удаляем его из списка подключений
+           // if (handler[] == null)
+                handler.Remove(client);
+            num--;
+           // Console.WriteLine("num1-" + num);
+        }
         internal void start()
         {
               
@@ -132,14 +147,16 @@ namespace SocketTcpServer
 
 
                     // готовимся  получать  сообщение
-                    handler[num] = listenSocket.Accept();
-                    myThread t1 = new myThread( num, handler,this);
+                   // clients[num] = num;
+                    handler.Add(listenSocket.Accept());
+                    if(last<num) last = num;
+                    myThread t1 = new myThread( last, handler,this);
                     Thread thread = new Thread(new ThreadStart(t1.func));
-                    clients[num] = num;
-
-               
                     num++;
-               
+
+
+
+                    // Console.WriteLine("num2-" + num);
 
 
 
@@ -164,15 +181,15 @@ namespace SocketTcpServer
             {
 
 
-              
 
-                if (clients[i] != nom)
-                {
-                   
-                    data = Encoding.Unicode.GetBytes(message);
+
+                // if (clients[i] != nom)
+                // {
+               // Console.WriteLine("num3-" + num);
+                data = Encoding.Unicode.GetBytes(message);
                     handler[i].Send(data);
 
-                }
+               // }
             }
         }
     }
