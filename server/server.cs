@@ -51,7 +51,7 @@ namespace SocketTcpServer
                             bytes = handler.Receive(data);  // получаем сообщение
                             builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
                             kol_bytes += bytes;
-                      //  Console.WriteLine("num5-" + num);
+                     
 
 
                     }
@@ -61,9 +61,8 @@ namespace SocketTcpServer
                     
 
                     Console.WriteLine(kol_bytes + "bytes");
-                    // отправляем ответ
-                    message = "\r \n "+num+": "+ builder.ToString();
-                    // закрываем сокет
+                    // закрываем сокет если нажали кнопку
+
                     if (builder.ToString() == "close")
                     {
                         message = "\r \n соединение с пользователем " + num + " закрыто.\n";
@@ -71,13 +70,17 @@ namespace SocketTcpServer
                         handler.Send(data);
                         serv.RemoveConnection(num - 1);
                         handler.Close();
-                     //   Console.WriteLine("num4-" + num);
+
                         Console.WriteLine(" соединение с пользователем " + num + " закрыто.\n");
-                      //  break;
+
 
                     }
 
-                    serv.Broadcast(message,num-1);
+                    // отправляем ответ
+                    message = "\r \n "+num+": "+ builder.ToString();
+                    serv.Broadcast(message, num - 1);
+                    
+                  
 
                  
 
@@ -99,21 +102,20 @@ namespace SocketTcpServer
    public class server
     {
         static int port = 3817; // порт для приема входящих запросов
-        //static int[] clients = new int[10];
-       // Socket[] handler = new Socket[10];
+      
         List<Socket> handler = new List<Socket>();
         static int[] clients = new int[10];
         int num = 0;
-        int last = 0;
+       
         protected internal void RemoveConnection(int nom)
         {
-            // получаем по id закрытое подключение
+           
             Socket client = handler.ElementAt(nom);
-            // и удаляем его из списка подключений
-           // if (handler[] == null)
+            // удаляем  из списка подключений
+         
                 handler.Remove(client);
             num--;
-           // Console.WriteLine("num1-" + num);
+          
         }
         internal void start()
         {
@@ -128,9 +130,10 @@ namespace SocketTcpServer
             //получаем адреса для запуска сокета
             IPEndPoint ipPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
 
-            // создаем сокет сервера
+         
             
             clients[0] = 1;
+            // создаем сокет сервера
             Socket listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             try
             {
@@ -141,24 +144,18 @@ namespace SocketTcpServer
                 listenSocket.Listen(10);
 
                 Console.WriteLine("Сервер запущен. Ожидание подключений...");
-
+                
                 while (true)
                 {
 
 
-                    // готовимся  получать  сообщение
-                   // clients[num] = num;
+                    // готовимся  получать  сообщение    
                     handler.Add(listenSocket.Accept());
-                    if(last<num) last = num;
-                    myThread t1 = new myThread( last, handler,this);
+               
+                    myThread t1 = new myThread( num, handler,this);
                     Thread thread = new Thread(new ThreadStart(t1.func));
                     num++;
-
-
-
-                    // Console.WriteLine("num2-" + num);
-
-
+         
 
                     thread.Start();
     
@@ -180,16 +177,10 @@ namespace SocketTcpServer
             for (int i = 0; i < num; i++)
             {
 
-
-
-
-                // if (clients[i] != nom)
-                // {
-               // Console.WriteLine("num3-" + num);
                 data = Encoding.Unicode.GetBytes(message);
                     handler[i].Send(data);
 
-               // }
+           
             }
         }
     }
